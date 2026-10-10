@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Demo</title>
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            --messenger-blue: #0866ff;
+            --messenger-blue-dark: #075ce5;
+            --surface: #ffffff;
+            --page: #f0f2f5;
+            --soft: #f0f2f5;
+            --line: #e4e6eb;
+            --text: #050505;
+            --muted: #65676b;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(8, 102, 255, .12), transparent 32%),
+                var(--page);
+            color: var(--text);
+        }
+        .app {
+            width: min(980px, 100%);
+            min-height: 620px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, .06);
+            border-radius: 20px;
+            background: var(--surface);
+            box-shadow: 0 20px 60px rgba(31, 35, 48, .13);
+        }
+        .setup { padding: 28px; }
+        .setup {
+            border-right: 1px solid var(--line);
+            background: linear-gradient(180deg, #fff, #f8faff);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: white;
+            font-size: 22px;
+            background: linear-gradient(135deg, #00b2ff, var(--messenger-blue));
+            box-shadow: 0 8px 18px rgba(8, 102, 255, .25);
+        }
+        h1, h2 { margin-top: 0; }
+        h1 { margin-bottom: 2px; font-size: 20px; }
+        h2 { margin: 0; font-size: 17px; }
+        .subtitle { margin: 0; color: var(--muted); font-size: 13px; }
+        label { display: block; margin: 16px 0 7px; font-size: 13px; font-weight: 700; }
+        input, button {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--messenger-blue);
+            box-shadow: 0 0 0 3px rgba(8, 102, 255, .12);
+        }
+        button {
+            margin-top: 18px;
+            border: 0;
+            background: var(--messenger-blue);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        button:hover:not(:disabled) { background: var(--messenger-blue-dark); }
+        button:disabled { background: #bcc7d8; cursor: not-allowed; }
+        #connectionStatus {
+            margin: 18px 0 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: var(--soft);
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .chat {
+            min-width: 0;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            background: white;
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .03);
+            z-index: 1;
+        }
+        .room-avatar {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: 800;
+            background: linear-gradient(135deg, #7c3aed, #ec4899);
+        }
+        .room-detail { min-width: 0; }
+        .room-note { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+        #messageList {
+            height: 480px;
+            margin: 0;
+            padding: 22px 18px;
+            overflow-y: auto;
+            list-style: none;
+            background: #fff;
+            scroll-behavior: smooth;
+        }
+        .empty-state {
+            height: 100%;
+            display: grid;
+            place-items: center;
+            color: #8a8d91;
+            font-size: 14px;
+            text-align: center;
+        }
+        .message-row {
+            display: flex;
+            margin: 4px 0 12px;
+        }
+        .message-row.mine { justify-content: flex-end; }
+        .message-row.theirs { justify-content: flex-start; }
+        .message-content { max-width: min(72%, 430px); }
+        .message-meta {
+            margin: 0 8px 5px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+        .mine .message-meta { text-align: right; }
+        .message-bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            line-height: 1.4;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+        .mine .message-bubble {
+            border-bottom-right-radius: 5px;
+            background: var(--messenger-blue);
+            color: white;
+        }
+        .theirs .message-bubble {
+            border-bottom-left-radius: 5px;
+            background: var(--soft);
+            color: var(--text);
+        }
+        .composer {
+            display: grid;
+            grid-template-columns: 1fr 48px;
+            gap: 10px;
+            padding: 14px 18px 18px;
+            border-top: 1px solid var(--line);
+        }
+        .composer input {
+            border: 0;
+            border-radius: 22px;
+            background: var(--soft);
+        }
+        .composer button {
+            height: 46px;
+            margin-top: 0;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 18px;
+        }
+        @media (max-width: 680px) {
+            body { display: block; padding: 0; background: white; }
+            .app { min-height: 100vh; grid-template-columns: 1fr; border: 0; border-radius: 0; }
+            .setup { border-right: 0; border-bottom: 1px solid #e5e7eb; }
+            .brand { margin-bottom: 16px; }
+            #messageList { height: 440px; }
+        }
+    </style>
+</head>
+<body>
+<main class="app">
+    <section class="setup">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h1>WebSocket Chat</h1>
+                <p class="subtitle">Nhắn tin thời gian thực</p>
+            </div>
+        </div>
+
+        <label for="usernameInput">Tên của bạn</label>
+        <input id="usernameInput" placeholder="Ví dụ: Alice" autocomplete="off">
+
+        <label for="roomInput">Room ID</label>
+        <input id="roomInput" value="room_1" autocomplete="off">
+
+        <button id="connectBtn" type="button">Kết nối</button>
+        <p id="connectionStatus">🔴 Chưa kết nối</p>
+    </section>
+
+    <section class="chat">
+        <header class="chat-header">
+            <div class="room-avatar">#</div>
+            <div class="room-detail">
+                <h2 id="roomTitle">Phòng chat</h2>
+                <p class="room-note">Tin nhắn được gửi theo thời gian thực</p>
+            </div>
+        </header>
+        <ul id="messageList" aria-live="polite">
+            <li id="emptyState" class="empty-state">Kết nối và gửi lời chào đầu tiên 👋</li>
+        </ul>
+        <div class="composer">
+            <input id="messageInput" placeholder="Nhập tin nhắn" autocomplete="off" disabled>
+            <button id="sendBtn" type="button" aria-label="Gửi tin nhắn" title="Gửi" disabled>➤</button>
+        </div>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    let stompClient = null;
+    let username = "";
+    let roomId = "room_1";
+
+    // Backend Spring Boot chạy ở port 8080. Dùng URL đầy đủ để frontend vẫn
+    // kết nối đúng khi index.html được mở bằng Live Server ở port 5500.
+    const websocketEndpoint = "http://localhost:8080/ws";
+
+    const usernameInput = document.getElementById("usernameInput");
+    const roomInput = document.getElementById("roomInput");
+    const connectBtn = document.getElementById("connectBtn");
+    const connectionStatus = document.getElementById("connectionStatus");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const messageList = document.getElementById("messageList");
+    const roomTitle = document.getElementById("roomTitle");
+
+    function connect() {
+        username = usernameInput.value.trim();
+        roomId = roomInput.value.trim() || "room_1";
+
+        if (!username) {
+            alert("Hãy nhập tên trước khi kết nối.");
+            return;
+        }
+
+        connectBtn.disabled = true;
+        connectionStatus.textContent = "🟡 Đang kết nối...";
+
+        const socket = new SockJS(websocketEndpoint);
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null;
+
+        stompClient.connect({}, function () {
+            connectionStatus.textContent = "🟢 Đã kết nối vào " + roomId;
+            roomTitle.textContent = "Phòng " + roomId;
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            usernameInput.disabled = true;
+            roomInput.disabled = true;
+            messageInput.focus();
+
+            stompClient.subscribe("/topic/room/" + roomId, function (message) {
+                displayMessage(JSON.parse(message.body));
+            });
+        }, function () {
+            connectionStatus.textContent = "🔴 Kết nối thất bại";
+            connectBtn.disabled = false;
+            stompClient = null;
+        });
+    }
+
+    function sendMessage() {
+        const content = messageInput.value.trim();
+        if (!content || !stompClient || !stompClient.connected) {
+            return;
+        }
+
+        stompClient.send("/app/chat.send", {}, JSON.stringify({
+            sender: username,
+            content: content,
+            roomId: roomId
+        }));
+
+        messageInput.value = "";
+        messageInput.focus();
+    }
+
+    function displayMessage(message) {
+        const emptyState = document.getElementById("emptyState");
+        if (emptyState) {
+            emptyState.remove();
+        }
+
+        const item = document.createElement("li");
+        const isMine = message.sender === username;
+        item.className = "message-row " + (isMine ? "mine" : "theirs");
+
+        const content = document.createElement("div");
+        content.className = "message-content";
+
+        const meta = document.createElement("div");
+        meta.className = "message-meta";
+        meta.textContent = (isMine ? "Bạn" : message.sender) + " · " + message.timestamp;
+
+        const bubble = document.createElement("div");
+        bubble.className = "message-bubble";
+        bubble.textContent = message.content;
+
+        content.append(meta, bubble);
+        item.appendChild(content);
+        messageList.appendChild(item);
+        messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    connectBtn.addEventListener("click", connect);
+    sendBtn.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+</script>
+</body>
+</html>
