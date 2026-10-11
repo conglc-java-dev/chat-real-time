@@ -17,11 +17,11 @@ public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/chat.send")
+    @MessageMapping("/chat.send")  // tin nhan gui di se duoc chay vao day
     public void sendMessage(ChatMessage message) {
         message.setTimestamp(LocalTime.now().format(TIME_FORMATTER));
 
-        messagingTemplate.convertAndSend(
+        messagingTemplate.convertAndSend(   // gui message vao broker da duoc enable o file config
                 "/topic/room/" + message.getRoomId(),
                 message
         );
