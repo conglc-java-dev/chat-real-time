@@ -7,14 +7,16 @@
     <style>
         * { box-sizing: border-box; }
         :root {
-            --messenger-blue: #0866ff;
-            --messenger-blue-dark: #075ce5;
+            --blue: #0866ff;
+            --blue-dark: #075ce5;
             --surface: #ffffff;
             --page: #f0f2f5;
             --soft: #f0f2f5;
             --line: #e4e6eb;
             --text: #050505;
             --muted: #65676b;
+            --green: #31a24c;
+            --red: #e41e3f;
         }
         body {
             margin: 0;
@@ -23,80 +25,65 @@
             place-items: center;
             padding: 24px;
             font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background:
-                radial-gradient(circle at top left, rgba(8, 102, 255, .12), transparent 32%),
-                var(--page);
+            background: radial-gradient(circle at top left, rgba(8,102,255,.12), transparent 32%), var(--page);
             color: var(--text);
         }
         .app {
-            width: min(980px, 100%);
-            min-height: 620px;
+            width: min(1100px, 100%);
+            min-height: 640px;
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 260px 1fr 220px;
             overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, .06);
+            border: 1px solid rgba(0,0,0,.06);
             border-radius: 20px;
             background: var(--surface);
-            box-shadow: 0 20px 60px rgba(31, 35, 48, .13);
+            box-shadow: 0 20px 60px rgba(31,35,48,.13);
         }
-        .setup { padding: 28px; }
+
+        /* ── LEFT PANEL: Setup ── */
         .setup {
+            padding: 24px;
             border-right: 1px solid var(--line);
-            background: linear-gradient(180deg, #fff, #f8faff);
-        }
-        .brand {
+            background: linear-gradient(180deg,#fff,#f8faff);
             display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 30px;
+            flex-direction: column;
         }
+        .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
         .brand-icon {
-            width: 44px;
-            height: 44px;
-            display: grid;
-            place-items: center;
-            border-radius: 14px;
-            color: white;
-            font-size: 22px;
-            background: linear-gradient(135deg, #00b2ff, var(--messenger-blue));
-            box-shadow: 0 8px 18px rgba(8, 102, 255, .25);
+            width: 40px; height: 40px;
+            display: grid; place-items: center;
+            border-radius: 12px; color: white; font-size: 20px;
+            background: linear-gradient(135deg, #00b2ff, var(--blue));
+            box-shadow: 0 8px 18px rgba(8,102,255,.25);
         }
-        h1, h2 { margin-top: 0; }
-        h1 { margin-bottom: 2px; font-size: 20px; }
-        h2 { margin: 0; font-size: 17px; }
-        .subtitle { margin: 0; color: var(--muted); font-size: 13px; }
-        label { display: block; margin: 16px 0 7px; font-size: 13px; font-weight: 700; }
-        input, button {
+        h1 { margin: 0 0 2px; font-size: 18px; }
+        .subtitle { margin: 0; color: var(--muted); font-size: 12px; }
+        label { display: block; margin: 14px 0 6px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+        input {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 12px;
             border: 1px solid var(--line);
             border-radius: 10px;
-            font-size: 15px;
-            transition: border-color .2s, box-shadow .2s, background .2s;
+            font-size: 14px;
+            transition: border-color .2s, box-shadow .2s;
         }
-        input:focus {
-            outline: none;
-            border-color: var(--messenger-blue);
-            box-shadow: 0 0 0 3px rgba(8, 102, 255, .12);
+        input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(8,102,255,.12); }
+        #connectBtn {
+            width: 100%; margin-top: 16px; padding: 11px;
+            border: 0; border-radius: 10px;
+            background: var(--blue); color: white;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: background .2s, transform .1s;
         }
-        button {
-            margin-top: 18px;
-            border: 0;
-            background: var(--messenger-blue);
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        button:hover:not(:disabled) { background: var(--messenger-blue-dark); }
-        button:disabled { background: #bcc7d8; cursor: not-allowed; }
+        #connectBtn:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-1px); }
+        #connectBtn:disabled { background: #bcc7d8; cursor: not-allowed; transform: none; }
         #connectionStatus {
-            margin: 18px 0 0;
-            padding: 10px 12px;
-            border-radius: 10px;
-            background: var(--soft);
-            color: var(--muted);
-            font-size: 13px;
+            margin: 14px 0 0; padding: 9px 12px;
+            border-radius: 10px; background: var(--soft);
+            color: var(--muted); font-size: 12px;
         }
+
+        /* ── CENTER: Chat ── */
         .chat {
             min-width: 0;
             display: grid;
@@ -104,103 +91,150 @@
             background: white;
         }
         .chat-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 20px;
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px;
             border-bottom: 1px solid var(--line);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .03);
-            z-index: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,.03);
         }
         .room-avatar {
-            width: 42px;
-            height: 42px;
-            display: grid;
-            place-items: center;
-            border-radius: 50%;
-            color: white;
-            font-weight: 800;
-            background: linear-gradient(135deg, #7c3aed, #ec4899);
+            width: 38px; height: 38px;
+            display: grid; place-items: center;
+            border-radius: 50%; color: white; font-weight: 800;
+            background: linear-gradient(135deg,#7c3aed,#ec4899);
         }
         .room-detail { min-width: 0; }
-        .room-note { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+        h2 { margin: 0; font-size: 15px; }
+        .room-note { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
         #messageList {
-            height: 480px;
-            margin: 0;
-            padding: 22px 18px;
-            overflow-y: auto;
-            list-style: none;
-            background: #fff;
-            scroll-behavior: smooth;
+            height: 480px; margin: 0; padding: 18px 16px;
+            overflow-y: auto; list-style: none;
+            background: #fff; scroll-behavior: smooth;
         }
         .empty-state {
-            height: 100%;
-            display: grid;
-            place-items: center;
-            color: #8a8d91;
-            font-size: 14px;
-            text-align: center;
+            height: 100%; display: grid; place-items: center;
+            color: #8a8d91; font-size: 13px; text-align: center;
         }
-        .message-row {
-            display: flex;
-            margin: 4px 0 12px;
+        /* System notification (user joined/left) */
+        .system-msg {
+            text-align: center; margin: 8px 0;
+            font-size: 11px; color: var(--muted);
+            font-style: italic;
         }
+        .message-row { display: flex; margin: 4px 0 10px; }
         .message-row.mine { justify-content: flex-end; }
         .message-row.theirs { justify-content: flex-start; }
-        .message-content { max-width: min(72%, 430px); }
-        .message-meta {
-            margin: 0 8px 5px;
-            color: var(--muted);
-            font-size: 11px;
-        }
+        .message-content { max-width: min(72%, 420px); }
+        .message-meta { margin: 0 8px 4px; color: var(--muted); font-size: 11px; }
         .mine .message-meta { text-align: right; }
         .message-bubble {
-            padding: 10px 14px;
-            border-radius: 18px;
-            line-height: 1.4;
-            overflow-wrap: anywhere;
-            white-space: pre-wrap;
+            padding: 9px 13px; border-radius: 18px;
+            line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap;
         }
-        .mine .message-bubble {
-            border-bottom-right-radius: 5px;
-            background: var(--messenger-blue);
-            color: white;
-        }
-        .theirs .message-bubble {
-            border-bottom-left-radius: 5px;
-            background: var(--soft);
-            color: var(--text);
-        }
+        .mine .message-bubble { border-bottom-right-radius: 5px; background: var(--blue); color: white; }
+        .theirs .message-bubble { border-bottom-left-radius: 5px; background: var(--soft); color: var(--text); }
         .composer {
-            display: grid;
-            grid-template-columns: 1fr 48px;
-            gap: 10px;
-            padding: 14px 18px 18px;
+            display: grid; grid-template-columns: 1fr 44px;
+            gap: 10px; padding: 12px 16px 16px;
             border-top: 1px solid var(--line);
         }
-        .composer input {
-            border: 0;
-            border-radius: 22px;
-            background: var(--soft);
-        }
+        .composer input { border: 0; border-radius: 22px; background: var(--soft); }
         .composer button {
-            height: 46px;
-            margin-top: 0;
-            padding: 0;
-            border-radius: 50%;
-            font-size: 18px;
+            height: 44px; width: 44px; margin: 0; padding: 0;
+            border: 0; border-radius: 50%;
+            background: var(--blue); color: white;
+            font-size: 16px; cursor: pointer;
+            transition: background .2s, transform .1s;
         }
-        @media (max-width: 680px) {
-            body { display: block; padding: 0; background: white; }
-            .app { min-height: 100vh; grid-template-columns: 1fr; border: 0; border-radius: 0; }
-            .setup { border-right: 0; border-bottom: 1px solid #e5e7eb; }
-            .brand { margin-bottom: 16px; }
-            #messageList { height: 440px; }
+        .composer button:hover:not(:disabled) { background: var(--blue-dark); transform: scale(1.08); }
+        .composer button:disabled { background: #bcc7d8; cursor: not-allowed; }
+
+        /* ── RIGHT PANEL: Presence ── */
+        .presence-panel {
+            border-left: 1px solid var(--line);
+            display: flex; flex-direction: column;
+            background: linear-gradient(180deg,#fff,#f8faff);
+        }
+        .presence-header {
+            padding: 16px 14px 12px;
+            border-bottom: 1px solid var(--line);
+        }
+        .presence-title {
+            font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .5px;
+            color: var(--muted); margin: 0 0 6px;
+        }
+        .online-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(49,162,76,.1); color: var(--green);
+            padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
+        }
+        .badge-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: .5; transform: scale(.75); }
+        }
+        #userList {
+            flex: 1; overflow-y: auto;
+            padding: 10px 10px;
+            list-style: none; margin: 0;
+        }
+        .user-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 7px 8px; border-radius: 10px;
+            margin-bottom: 4px;
+            transition: background .15s;
+        }
+        .user-item:hover { background: var(--soft); }
+        .user-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%; display: grid; place-items: center;
+            font-size: 12px; font-weight: 800; color: white;
+            flex-shrink: 0; position: relative;
+        }
+        .user-avatar::after {
+            content: '';
+            position: absolute; bottom: 0; right: 0;
+            width: 9px; height: 9px; border-radius: 50%;
+            background: var(--green); border: 2px solid white;
+        }
+        .user-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-you { font-size: 10px; color: var(--muted); }
+
+        /* Activity log */
+        .activity-log {
+            border-top: 1px solid var(--line);
+            padding: 10px 12px;
+        }
+        .activity-title {
+            font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+            color: var(--muted); margin: 0 0 8px; font-weight: 700;
+        }
+        #activityList {
+            list-style: none; margin: 0; padding: 0;
+            max-height: 120px; overflow-y: auto;
+        }
+        .activity-item {
+            font-size: 11px; color: var(--muted);
+            padding: 3px 0; border-bottom: 1px solid var(--line);
+            display: flex; gap: 5px;
+        }
+        .activity-item:last-child { border-bottom: 0; }
+        .act-icon { flex-shrink: 0; }
+
+        @media (max-width: 720px) {
+            .app { grid-template-columns: 1fr; }
+            .presence-panel { display: none; }
         }
     </style>
 </head>
 <body>
 <main class="app">
+
+    <!-- ── LEFT: Setup ── -->
     <section class="setup">
         <div class="brand">
             <div class="brand-icon">✦</div>
@@ -220,12 +254,13 @@
         <p id="connectionStatus">🔴 Chưa kết nối</p>
     </section>
 
+    <!-- ── CENTER: Chat ── -->
     <section class="chat">
         <header class="chat-header">
             <div class="room-avatar">#</div>
             <div class="room-detail">
                 <h2 id="roomTitle">Phòng chat</h2>
-                <p class="room-note">Tin nhắn được gửi theo thời gian thực</p>
+                <p class="room-note" id="roomNote">Tin nhắn được gửi theo thời gian thực</p>
             </div>
         </header>
         <ul id="messageList" aria-live="polite">
@@ -236,36 +271,64 @@
             <button id="sendBtn" type="button" aria-label="Gửi tin nhắn" title="Gửi" disabled>➤</button>
         </div>
     </section>
+
+    <!-- ── RIGHT: Presence Panel ── -->
+    <aside class="presence-panel">
+        <div class="presence-header">
+            <p class="presence-title">Đang trực tuyến</p>
+            <div class="online-badge">
+                <span class="badge-dot"></span>
+                <span id="onlineCount">0</span> người
+            </div>
+        </div>
+        <ul id="userList"></ul>
+        <div class="activity-log">
+            <p class="activity-title">Hoạt động</p>
+            <ul id="activityList"></ul>
+        </div>
+    </aside>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 <script>
+    const BACKEND = "http://localhost:8080";
+    const websocketEndpoint = BACKEND + "/ws";
+
     let stompClient = null;
     let username = "";
     let roomId = "room_1";
 
-    // Backend Spring Boot chạy ở port 8080. Dùng URL đầy đủ để frontend vẫn
-    // kết nối đúng khi index.html được mở bằng Live Server ở port 5500.
-    const websocketEndpoint = "http://localhost:8080/ws";
+    // Bảng màu avatar, chọn theo hash tên
+    const AVATAR_COLORS = [
+        "#0866ff","#7c3aed","#ec4899","#f59e0b","#10b981","#ef4444","#8b5cf6","#06b6d4"
+    ];
+    function avatarColor(name) {
+        let h = 0;
+        for (let c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+        return AVATAR_COLORS[h % AVATAR_COLORS.length];
+    }
 
-    const usernameInput = document.getElementById("usernameInput");
-    const roomInput = document.getElementById("roomInput");
-    const connectBtn = document.getElementById("connectBtn");
+    // ── DOM refs ──
+    const usernameInput    = document.getElementById("usernameInput");
+    const roomInput        = document.getElementById("roomInput");
+    const connectBtn       = document.getElementById("connectBtn");
     const connectionStatus = document.getElementById("connectionStatus");
-    const messageInput = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const messageList = document.getElementById("messageList");
-    const roomTitle = document.getElementById("roomTitle");
+    const messageInput     = document.getElementById("messageInput");
+    const sendBtn          = document.getElementById("sendBtn");
+    const messageList      = document.getElementById("messageList");
+    const roomTitle        = document.getElementById("roomTitle");
+    const roomNote         = document.getElementById("roomNote");
+    const onlineCount      = document.getElementById("onlineCount");
+    const userList         = document.getElementById("userList");
+    const activityList     = document.getElementById("activityList");
 
+    // ── Kết nối WebSocket ──
     function connect() {
         username = usernameInput.value.trim();
-        roomId = roomInput.value.trim() || "room_1";
-
-        if (!username) {
-            alert("Hãy nhập tên trước khi kết nối.");
-            return;
-        }
+        roomId   = roomInput.value.trim() || "room_1";
+        if (!username) { alert("Hãy nhập tên trước khi kết nối."); return; }
 
         connectBtn.disabled = true;
         connectionStatus.textContent = "🟡 Đang kết nối...";
@@ -274,46 +337,71 @@
         stompClient = Stomp.over(socket);
         stompClient.debug = null;
 
-        stompClient.connect({}, function () {
-            connectionStatus.textContent = "🟢 Đã kết nối vào " + roomId;
-            roomTitle.textContent = "Phòng " + roomId;
-            messageInput.disabled = false;
-            sendBtn.disabled = false;
-            usernameInput.disabled = true;
-            roomInput.disabled = true;
-            messageInput.focus();
-
-            stompClient.subscribe("/topic/room/" + roomId, function (message) {
-                displayMessage(JSON.parse(message.body));
-            });
-        }, function () {
-            connectionStatus.textContent = "🔴 Kết nối thất bại";
-            connectBtn.disabled = false;
-            stompClient = null;
-        });
+        // Truyền username qua STOMP header để ChannelInterceptor bắt và lưu vào session
+        stompClient.connect({ username: username }, onConnected, onError);
     }
 
+    function onConnected() {
+        connectionStatus.textContent = "🟢 Đã kết nối";
+        roomTitle.textContent = "Phòng " + roomId;
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        usernameInput.disabled = true;
+        roomInput.disabled = true;
+        messageInput.focus();
+
+        // 1. Subscribe kênh chat của room
+        stompClient.subscribe("/topic/room/" + roomId, function(msg) {
+            displayMessage(JSON.parse(msg.body));
+        });
+
+        // 2. Subscribe kênh presence để nhận cập nhật online/offline real-time
+        stompClient.subscribe("/topic/presence", function(msg) {
+            handlePresence(JSON.parse(msg.body));
+        });
+
+        // 3. Lấy snapshot danh sách user đang online ngay lúc vừa vào
+        fetch(BACKEND + "/api/presence/users")
+            .then(r => r.json())
+            .then(data => renderUserList(data.onlineUsers));
+
+        // 4. Tải lịch sử tin nhắn từ DB (bao gồm tin nhắn gửi khi offline)
+        fetch(BACKEND + "/api/messages?roomId=" + roomId)
+            .then(r => r.json())
+            .then(messages => {
+                if (messages.length > 0) {
+                    const emptyState = document.getElementById("emptyState");
+                    if (emptyState) emptyState.remove();
+                    messages.forEach(displayMessage);
+                    roomNote.textContent = messages.length + " tin nhắn đã tải từ DB";
+                }
+            });
+    }
+
+    function onError() {
+        connectionStatus.textContent = "🔴 Kết nối thất bại";
+        connectBtn.disabled = false;
+        stompClient = null;
+    }
+
+    // ── Gửi tin nhắn ──
     function sendMessage() {
         const content = messageInput.value.trim();
-        if (!content || !stompClient || !stompClient.connected) {
-            return;
-        }
+        if (!content || !stompClient || !stompClient.connected) return;
 
         stompClient.send("/app/chat.send", {}, JSON.stringify({
             sender: username,
             content: content,
             roomId: roomId
         }));
-
         messageInput.value = "";
         messageInput.focus();
     }
 
+    // ── Hiển thị tin nhắn chat ──
     function displayMessage(message) {
         const emptyState = document.getElementById("emptyState");
-        if (emptyState) {
-            emptyState.remove();
-        }
+        if (emptyState) emptyState.remove();
 
         const item = document.createElement("li");
         const isMine = message.sender === username;
@@ -336,13 +424,63 @@
         messageList.scrollTop = messageList.scrollHeight;
     }
 
+    // ── Xử lý sự kiện Presence (online/offline) ──
+    function handlePresence(payload) {
+        // Cập nhật danh sách và số người online
+        renderUserList(payload.onlineUsers);
+
+        // Hiển thị thông báo hệ thống trong khung chat
+        if (payload.username !== username) {
+            const action = payload.type === "USER_JOINED"
+                ? "🟢 " + payload.username + " vừa online"
+                : "🔴 " + payload.username + " đã ngắt kết nối";
+            addSystemMessage(action);
+        }
+
+        // Ghi vào activity log bên phải
+        addActivity(payload.type === "USER_JOINED" ? "🟢" : "🔴", payload.username, payload.type);
+    }
+
+    function renderUserList(onlineUsers) {
+        onlineCount.textContent = onlineUsers.length;
+        userList.innerHTML = "";
+        onlineUsers.forEach(name => {
+            const li = document.createElement("li");
+            li.className = "user-item";
+            const isMe = name === username;
+            li.innerHTML = `
+                <div class="user-avatar" style="background:${avatarColor(name)}">${name[0].toUpperCase()}</div>
+                <div>
+                    <div class="user-name">${name}</div>
+                    ${isMe ? '<div class="user-you">(Bạn)</div>' : ''}
+                </div>`;
+            userList.appendChild(li);
+        });
+    }
+
+    function addSystemMessage(text) {
+        const li = document.createElement("li");
+        li.className = "system-msg";
+        li.textContent = text;
+        messageList.appendChild(li);
+        messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    function addActivity(icon, name, type) {
+        const li = document.createElement("li");
+        li.className = "activity-item";
+        const time = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+        const action = type === "USER_JOINED" ? "tham gia" : "rời khỏi";
+        li.innerHTML = `<span class="act-icon">${icon}</span><span>${name} ${action} lúc ${time}</span>`;
+        activityList.prepend(li);
+        // Giữ tối đa 15 entry
+        while (activityList.children.length > 15) activityList.removeChild(activityList.lastChild);
+    }
+
+    // ── Event listeners ──
     connectBtn.addEventListener("click", connect);
     sendBtn.addEventListener("click", sendMessage);
-    messageInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
-    });
+    messageInput.addEventListener("keydown", e => { if (e.key === "Enter") sendMessage(); });
 </script>
 </body>
 </html>
